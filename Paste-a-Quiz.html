@@ -1,0 +1,359 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Paste-a-Quiz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f3f6fa;--card:#fff;--ink:#14213d;--mute:#5d6b85;--line:#d5dce8;--acc:#3a4fd7;--ok:#1f8a5b;--okbg:#e3f5ec;--bad:#c23b3b;--badbg:#fbe8e8;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1626;--card:#18223a;--ink:#e8edf8;--mute:#93a0bc;--line:#2c3855;--acc:#8b9bff;--ok:#5fd09b;--okbg:#14352a;--bad:#ff8b8b;--badbg:#3b1d24}}
+:root[data-theme="dark"]{--bg:#0f1626;--card:#18223a;--ink:#e8edf8;--mute:#93a0bc;--line:#2c3855;--acc:#8b9bff;--ok:#5fd09b;--okbg:#14352a;--bad:#ff8b8b;--badbg:#3b1d24}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.6rem;margin:8px 0 4px;letter-spacing:-.01em}
+p.sub{color:var(--mute);margin:0 0 16px}
+textarea{width:100%;min-height:260px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+textarea:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:700}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+.chk{display:flex;gap:6px;align-items:center;color:var(--mute)}
+details{margin:18px 0;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:10px 14px}
+summary{cursor:pointer;font-weight:700}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:10px 0}
+.err{background:var(--badbg);color:var(--bad);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:.92rem}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:8px 0 20px}
+.bar i{display:block;height:100%;background:var(--acc);transition:width .25s}
+.meta{display:flex;justify-content:space-between;color:var(--mute);font-size:.9rem}
+h2{font-size:1.3rem;line-height:1.35;margin:0 0 16px}
+.opt{display:block;width:100%;text-align:left;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.opt:hover:enabled{border-color:var(--acc)}
+.opt.ok{background:var(--okbg);border-color:var(--ok);color:var(--ok);font-weight:700}
+.opt.bad{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.opt.sel{border-color:var(--acc);background:var(--bg);font-weight:700}
+.opt:disabled{cursor:default}
+.note{border-left:3px solid var(--acc);padding:6px 12px;color:var(--mute);margin:14px 0}
+.filebtn{display:inline-block;margin-bottom:12px;cursor:pointer}
+h2 img,.opt img,.note img{display:block;max-width:100%;max-height:260px;margin:8px 0;border-radius:6px}
+.opt img{max-height:160px}
+canvas.pg{display:block;width:100%;height:auto;margin:8px 0;border-radius:6px;background:#fff}
+.exp{max-width:640px;margin:0 auto;padding:0 16px 48px}
+.exp h3{font-size:1.05rem;margin:0 0 4px}
+.exp textarea{min-height:150px;font-size:13px}
+.exp .msg{color:var(--mute);font-size:.9rem;margin-top:8px}
+.score{font-size:3rem;font-weight:700;margin:24px 0 4px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+let PDFDOC = null;
+try { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; } catch (e) {}
+
+const AI_PROMPT = `Turn the attached document into multiple-choice quiz questions. Output ONLY plain text (.txt) in exactly this format, with no markdown formatting and no numbering:
+
+* Question text on one line
+Wrong option
+Correct option @
+Another wrong option
+> Optional one-line explanation
+
+* Next question
+...
+
+Rules: every question starts with "*"; every following line is one option; put " @" at the end of EVERY correct option (one or more per question); 3-5 options per question; at least one "@" per question; a line starting with ">" is an optional explanation; leave a blank line between questions; if a question depends on a figure, picture, chart or diagram in the PDF, add ![](pN) at the end of the question line, where N is the PDF page number that contains it (example: ![](p4)); never use any other image links.`;
+
+function parse(text) {
+  const qs = [], errors = [];
+  const blocks = text.split(/^[ \t]*\*[ \t]+/m).slice(1);
+  blocks.forEach((b, i) => {
+    const lines = b.split("\n").map(l => l.trim()).filter(Boolean);
+    const q = lines.shift();
+    const opts = [];
+    let note = "";
+    lines.forEach(l => {
+      if (l.startsWith(">")) note = l.slice(1).trim();
+      else {
+        const ok = /@\s*$/.test(l);
+        opts.push({ t: l.replace(/@\s*$/, "").trim(), ok });
+      }
+    });
+    const n = i + 1;
+    if (!q) errors.push(`Question ${n}: missing text.`);
+    else if (opts.length < 2) errors.push(`Question ${n} ("${q.slice(0, 30)}"): needs at least 2 options.`);
+    else if (!opts.some(o => o.ok)) errors.push(`Question ${n} ("${q.slice(0, 30)}"): needs at least one @ option.`);
+    else qs.push({ q, opts, note });
+  });
+  return { qs, errors };
+}
+
+const shuffle = a => {
+  a = [...a];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+function PdfPage({ n }) {
+  const ref = useRef(null);
+  const [err, setErr] = useState("");
+  useEffect(() => {
+    let dead = false;
+    (async () => {
+      try {
+        const page = await PDFDOC.getPage(n);
+        const vp = page.getViewport({ scale: 1.6 });
+        const c = ref.current;
+        c.width = vp.width; c.height = vp.height;
+        await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+      } catch (e) { if (!dead) setErr(`[page ${n} could not be shown]`); }
+    })();
+    return () => { dead = true; };
+  }, [n]);
+  return err ? <em>{err}</em> : <canvas ref={ref} className="pg" />;
+}
+
+function Rich({ text }) {
+  return text.split(/(!\[[^\]]*\]\([^)\s]+\))/g).map((p, k) => {
+    const m = p.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
+    if (!m) return <React.Fragment key={k}>{p}</React.Fragment>;
+    const pg = m[2].match(/^(?:p|page)[:\s-]?(\d+)$/i);
+    if (pg) return PDFDOC ? <PdfPage key={k} n={+pg[1]} /> : <em key={k}>[page {pg[1]}: attach the PDF]</em>;
+    if (/^(https?:|data:image\/)/i.test(m[2])) return <img key={k} src={m[2]} alt={m[1]} />;
+    return <React.Fragment key={k}>{p}</React.Fragment>;
+  });
+}
+
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const toHtml = t => t.split(/(!\[[^\]]*\]\([^)\s]+\))/g).map(p => {
+  const m = p.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
+  if (!m) return esc(p);
+  return /^(https?:|data:image\/)/i.test(m[2]) ? `<img src="${m[2]}">` : "";
+}).join("").trim();
+const fld = s => (/[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
+const ankiLine = c =>
+  fld(toHtml(c.q) + "<br><br>" + c.opts.map(o => toHtml(o.t)).join("<br>")) + ";" +
+  fld(c.opts.filter(o => o.ok).map(o => toHtml(o.t)).join("<br>"));
+
+function ExportBox({ log, onClear }) {
+  const [dl, setDl] = useState(null);
+  const [msg, setMsg] = useState("");
+  useEffect(() => {
+    let dead = false;
+    try {
+      if (window.claude && window.claude.use) window.claude.use("downloads").then(d => { if (!dead) setDl(d || null); }, () => {});
+    } catch (e) {}
+    return () => { dead = true; };
+  }, []);
+  const text = log.map(x => x.line).join("\n");
+  const flash = m => { setMsg(m); setTimeout(() => setMsg(""), 2500); };
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(text); flash("Copied."); } catch (e) { flash("Copy failed. Select the text and copy it manually."); }
+  };
+  const save = async () => {
+    const filename = "quiz-anki.txt";
+    if (dl) {
+      try { await dl.save({ filename, data: text }); } catch (e) { if (!e || e.code !== "declined") flash("Could not save the file. Use Copy instead."); }
+      return;
+    }
+    try {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+      a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    } catch (e) { flash("Could not save the file. Use Copy instead."); }
+  };
+  return (
+    <section className="exp">
+      <h3>Anki export ({log.length} answered)</h3>
+      <textarea readOnly value={text} aria-label="Anki import text" onFocus={e => e.target.select()} />
+      <div className="row">
+        <button className="btn" onClick={copy}>Copy</button>
+        <button className="btn ghost" onClick={save}>Export .txt</button>
+        <button className="btn ghost" onClick={onClear}>Clear</button>
+      </div>
+      {msg && <div className="msg">{msg}</div>}
+    </section>
+  );
+}
+
+function Quiz({ items, onExit, onAnswer }) {
+  const [i, setI] = useState(0);
+  const [sel, setSel] = useState([]);
+  const [sub, setSub] = useState(false);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+  const cur = items[i];
+  const multi = cur ? cur.opts.filter(o => o.ok).length > 1 : false;
+
+  if (done) {
+    return (
+      <main>
+        <div className="score">{score}/{items.length}</div>
+        <p className="sub">{Math.round((score / items.length) * 100)}% correct</p>
+        <div className="row">
+          <button className="btn" onClick={() => { setI(0); setSel([]); setSub(false); setScore(0); setDone(false); }}>Retry</button>
+          <button className="btn ghost" onClick={onExit}>New quiz</button>
+        </div>
+      </main>
+    );
+  }
+
+  const grade = chosen => {
+    setSel(chosen);
+    setSub(true);
+    onAnswer(cur);
+    if (cur.opts.every((o, k) => o.ok === chosen.includes(k))) setScore(s => s + 1);
+  };
+  const choose = k => {
+    if (sub) return;
+    if (!multi) grade([k]);
+    else setSel(p => (p.includes(k) ? p.filter(x => x !== k) : [...p, k]));
+  };
+  const next = () => {
+    if (i + 1 >= items.length) setDone(true);
+    else { setI(i + 1); setSel([]); setSub(false); }
+  };
+
+  return (
+    <main>
+      <div className="meta"><span>Question {i + 1} of {items.length}</span><span>Score {score}</span></div>
+      <div className="bar"><i style={{ width: `${(i / items.length) * 100}%` }} /></div>
+      <h2><Rich text={cur.q} /></h2>
+      {multi && <p className="sub">Select all that apply.</p>}
+      {cur.opts.map((o, k) => {
+        let c = "opt";
+        if (sub) { if (o.ok) c += " ok"; else if (sel.includes(k)) c += " bad"; }
+        else if (sel.includes(k)) c += " sel";
+        return <button key={k} className={c} disabled={sub} aria-pressed={sel.includes(k)} onClick={() => choose(k)}><Rich text={o.t} /></button>;
+      })}
+      {sub && cur.note && <div className="note"><Rich text={cur.note} /></div>}
+      <div className="row">
+        {multi && !sub
+          ? <button className="btn" disabled={!sel.length} onClick={() => grade(sel)}>Check</button>
+          : <button className="btn" disabled={!sub} onClick={next}>{i + 1 >= items.length ? "Finish" : "Next"}</button>}
+        <button className="btn ghost" onClick={onExit}>Quit</button>
+      </div>
+    </main>
+  );
+}
+
+function App() {
+  const area = React.useRef(null);
+  const [file, setFile] = useState(null);
+  const [pdf, setPdf] = useState(null);
+  const [mix, setMix] = useState(true);
+  const [items, setItems] = useState(null);
+  const [errors, setErrors] = useState([]);
+  const [copied, setCopied] = useState(false);
+  const [log, setLog] = useState([]);
+  const addAnswer = c => setLog(l => (l.some(x => x.q === c.q) ? l : [...l, { q: c.q, line: ankiLine(c) }]));
+  const box = log.length ? <ExportBox log={log} onClear={() => setLog([])} /> : null;
+
+  const start = () => {
+    const text = file ? file.text : area.current.value;
+    if (!text.trim()) { setErrors(["Paste text or choose a .txt file first."]); return; }
+    const { qs, errors } = parse(text);
+    setErrors(errors);
+    if (!qs.length) {
+      if (!errors.length) setErrors(["No questions found. Each question must start with *."]);
+      return;
+    }
+    setItems(mix ? shuffle(qs).map(q => ({ ...q, opts: shuffle(q.opts) })) : qs);
+  };
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(AI_PROMPT); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch (e) {}
+  };
+  const pickFile = e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { setFile({ name: f.name, text: String(r.result) }); setErrors([]); };
+    r.onerror = () => setErrors(["Could not read that file."]);
+    r.readAsText(f);
+  };
+
+  const pickPdf = e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = async () => {
+      try {
+        PDFDOC = await pdfjsLib.getDocument({ data: new Uint8Array(r.result) }).promise;
+        setPdf({ name: f.name, pages: PDFDOC.numPages }); setErrors([]);
+      } catch (x) { PDFDOC = null; setPdf(null); setErrors(["Could not read that PDF."]); }
+    };
+    r.readAsArrayBuffer(f);
+  };
+
+  if (items) return <><Quiz items={items} onExit={() => setItems(null)} onAnswer={addAnswer} />{box}</>;
+
+  return (
+    <>
+    <main>
+      <h1>Paste-a-Quiz</h1>
+      <p className="sub">Choose a .txt file or paste your quiz text, then start.</p>
+      <details>
+        <summary>Format and AI prompt</summary>
+        <pre>{AI_PROMPT}</pre>
+        <button className="btn ghost" onClick={copy}>{copied ? "Copied" : "Copy prompt"}</button>
+      </details>
+      {file ? (
+        <div className="row">
+          <span>Loaded: <b>{file.name}</b></span>
+          <button className="btn ghost" onClick={() => setFile(null)}>Remove</button>
+        </div>
+      ) : (
+        <>
+          <label className="btn ghost filebtn">Choose .txt file
+            <input type="file" accept=".txt,text/plain" onChange={pickFile} hidden />
+          </label>
+          <textarea ref={area} defaultValue="" placeholder={"* Capital of France?\nBerlin\nParis @\nMadrid\n> Paris has been the capital since 987.\n\n* 2 + 2?\n3\n4 @"} aria-label="Quiz text" />
+        </>
+      )}
+      <div className="row">
+        {pdf ? (
+          <>
+            <span>PDF: <b>{pdf.name}</b> ({pdf.pages} pages)</span>
+            <button className="btn ghost" onClick={() => { PDFDOC = null; setPdf(null); }}>Remove</button>
+          </>
+        ) : (
+          <label className="btn ghost filebtn">Attach PDF (optional, for page images)
+            <input type="file" accept=".pdf,application/pdf" onChange={pickPdf} hidden />
+          </label>
+        )}
+      </div>
+      {errors.length > 0 && <div className="err">{errors.map((e, k) => <div key={k}>{e}</div>)}</div>}
+      <div className="row">
+        <button className="btn" onClick={start}>Start quiz</button>
+        <label className="chk"><input type="checkbox" checked={mix} onChange={e => setMix(e.target.checked)} /> Shuffle</label>
+      </div>
+    </main>
+    {box}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
+
+</body></html>
